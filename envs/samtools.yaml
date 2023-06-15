@@ -1,0 +1,9 @@
+name: samtools
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - fastqc
+  - samtools
+  - sra-tools

@@ -1,0 +1,9 @@
+tmp_dir: "/fscratch/fanslerm"
+
+runs_file: "metadata/runs_sheet.csv"
+samples_file: "metadata/sample_sheet.csv"
+max_read_length: 76
+
+genome_fa: "/data/mayrc/db/hg38/Homo_sapiens_assembly38.fasta"
+
+utrome_gtf: "/data/mayrc/data/hcl/gff/utrome.e30.t5.gc39.pas3.f0.9999.w500.gtf"

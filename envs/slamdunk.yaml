@@ -1,0 +1,7 @@
+name: slamdunk
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - slamdunk

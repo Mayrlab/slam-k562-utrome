@@ -1,0 +1,12 @@
+data/fastq/k562_0h_A.fastq.gz,k562_0h_A,K562_SLAM,0
+data/fastq/k562_0h_B.fastq.gz,k562_0h_B,K562_SLAM,0
+data/fastq/k562_0h_C.fastq.gz,k562_0h_C,K562_SLAM,0
+data/fastq/k562_2h_A.fastq.gz,k562_2h_A,K562_SLAM,120
+data/fastq/k562_2h_B.fastq.gz,k562_2h_B,K562_SLAM,120
+data/fastq/k562_2h_C.fastq.gz,k562_2h_C,K562_SLAM,120
+data/fastq/k562_4h_A.fastq.gz,k562_4h_A,K562_SLAM,240
+data/fastq/k562_4h_B.fastq.gz,k562_4h_B,K562_SLAM,240
+data/fastq/k562_4h_C.fastq.gz,k562_4h_C,K562_SLAM,240
+data/fastq/k562_6h_A.fastq.gz,k562_6h_A,K562_SLAM,360
+data/fastq/k562_6h_B.fastq.gz,k562_6h_B,K562_SLAM,360
+data/fastq/k562_6h_C.fastq.gz,k562_6h_C,K562_SLAM,360
