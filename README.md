@@ -1,7 +1,7 @@
 ## slam-k562-utrome
 This repository provides a pipeline for reprocessing the SLAM-seq dataset from [Wu et al., 2019](https://doi.org/10.7554/eLife.45396) at 3'UTR isoform resolution using [the human UTRome annotation](/Mayrlab/hcl-utrome) developed by Fansler et al. 2023.
 
-## Reproducing Pipeline
+## Reproducing the Pipeline
 ### Cloning
 This repository can be cloned with:
 
