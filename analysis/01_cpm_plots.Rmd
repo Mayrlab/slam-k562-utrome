@@ -1,0 +1,183 @@
+---
+title: "Model Rates"
+author: "Mervin M Fansler"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document: 
+    code_folding: show
+    toc: true
+    toc_float: true
+    df_paged: true
+---
+
+# Purpose
+
+<!--
+Explain why this document exists. 
+What are you trying to figure out?
+What are your expectations prior to the analysis?
+-->
+
+# Initialization
+
+## Libraries
+```{r libs, message=FALSE, warning=FALSE}
+library(magrittr)
+library(tidyverse)
+library(furrr)
+```
+
+## Parameters
+```{r set_params}
+set.seed(20230227)
+plan(multisession, workers = 8)
+
+DIR_COUNTS="data/count"
+
+OUT_RATES="tbl/df_k562_slam_rates.csv"
+```
+
+## Functions
+
+```{r methods}
+plot_cpm <- function (df, tx_id) {
+    df %>%
+        filter(Name == tx_id) %>%
+        group_by(sample_id, minutes, group_id) %>%
+        summarize(ReadsCPM=sum(ReadsCPM), .groups='drop') %>%
+        ggplot(aes(x=minutes, y=ReadsCPM)) +
+        stat_summary(geom='bar', fun='mean', width=50, fill='grey80', color='grey10') +
+        stat_summary(fun.data="mean_se", geom="errorbar", width=15) +
+        geom_smooth(formula=y ~ x, method="glm", fullrange=TRUE,
+                    method.args=list(family=gaussian(link="log")),
+                    alpha=0.1, color='orchid', linetype='dashed', linewidth=0.8) +
+        geom_point(aes(color=group_id)) +
+        scale_x_continuous(limits=c(-45,405), expand=c(0,0,0,0), breaks=seq(0,360,120)) +
+        scale_y_continuous(expand=c(0,0,0,0.05)) +
+        scale_colour_viridis_d(begin=0.20, end=0.8) +
+        labs(x="Minutes", y="CPM", color="Group") +
+        theme_bw()
+}
+
+plot_conversion_rate <- function (df, tx_id) {
+    df %>%
+        filter(Name == tx_id) %>%
+        group_by(sample_id, minutes, group_id) %>%
+        summarize(ConversionRate=weighted.mean(ConversionRate, ReadsCPM), .groups='drop') %>%
+        ggplot(aes(x=minutes, y=ConversionRate)) +
+        stat_summary(geom='bar', fun='mean', width=50, fill='grey80', color='grey10') +
+        stat_summary(fun.data="mean_se", geom="errorbar", width=15) +
+        geom_smooth(formula=y ~ x, method="glm", fullrange=TRUE,
+                    method.args=list(family=gaussian(link="log")),
+                    alpha=0.1, color='orchid', linetype='dashed', linewidth=0.8) +
+        geom_point(aes(color=group_id)) +
+        scale_x_continuous(limits=c(-45,405), expand=c(0,0,0,0), breaks=seq(0,360,120)) +
+        scale_y_continuous(expand=c(0,0,0,0.05)) +
+        scale_colour_viridis_d(begin=0.20, end=0.8) +
+        labs(x="Minutes", y="ConversionRate", color="Group") +
+        theme_bw()
+}
+```
+
+# Data
+## Loading
+```{r load_data, message=FALSE}
+df_tcount <- tibble(file=list.files(DIR_COUNTS, "*.tsv", full.names=TRUE)) %>%
+    ## expand metadata
+    mutate(sample_id=str_extract(file, "k562_[0246]h_[ABC]"),
+           minutes=60*as.numeric(str_remove_all(sample_id, "(k562_|h_.*)")),
+           group_id=factor(str_extract(sample_id, ".$"))) %>%
+    ## read files
+    mutate(tcount=map(file, read_tsv, skip=2)) %>%
+    ## expand
+    unnest(tcount) %>%
+    ## filter empty transcripts
+    group_by(Name) %>%
+    filter(sum(ReadCount) > 0) %>%
+    ungroup()
+```
+
+## Preprocessing
+```{r prepare_data}
+
+```
+
+# Analysis
+
+## RAC1
+
+```{r plt_rac1_cpm, fig.width=5, fig.height=4}
+plot_cpm(df_tcount, "ENST00000348035.9-UTR-1277") + labs(title="RAC1 SU")
+
+plot_cpm(df_tcount, "ENST00000348035.9") + labs(title="RAC1 LU")
+
+```
+
+```{r plt_rac1_rate, fig.width=5, fig.height=4}
+plot_conversion_rate(df_tcount, "ENST00000348035.9-UTR-1277") + labs(title="RAC1 SU")
+
+plot_conversion_rate(df_tcount, "ENST00000348035.9") + labs(title="RAC1 LU")
+
+```
+
+```{r compute_rates}
+TX_ID="ENST00000348035.9"
+
+idx_txs <- unique(df_tcount$Name) %>% head(n=1000)
+df_rates <- df_tcount %>%
+    #filter(Name %in% idx_txs) %>%
+    group_by(Name, sample_id, minutes, group_id) %>%
+    summarize(ConversionRate=weighted.mean(ConversionRate, ReadsCPM), .groups="drop",
+              ReadsCPM=weighted.mean(ReadsCPM, ReadsCPM)) %>%
+    group_by(Name) %>%
+    filter(all(!is.na(ConversionRate))) %>%#, all(ReadsCPM >= 1.5)) %>%
+    nest() %>%
+    transmute(fit=map(data, ~ broom::tidy(glm(.x, formula=ConversionRate ~ minutes, 
+                                              family=gaussian(link="log"),
+                                              start=c(intercept=-2, minutes=-2e-3))), .progress=TRUE)) %>%
+    unnest(fit) %>%
+    filter(term == 'minutes') %>%
+    mutate(term=NULL, half_life=-log(2)/estimate, 
+           half_life_low=-log(2)/(estimate-std.error),
+           half_life_high=-log(2)/(estimate+std.error)) %>%
+    rename(tx_id=Name) %>%
+    select(tx_id, half_life_low, half_life, half_life_high, everything())
+
+head(df_rates, n=100)
+```
+
+```{r export_rates}
+write_csv(df_rates, OUT_RATES)
+```
+
+# Conclusion
+
+<!--
+What was found?
+Clearly state conclusions.
+Was there anything unexpected?
+Are there unanswered questions?
+What should be worked on next?
+-->
+
+---
+
+# Runtime Details
+## Session Info
+```{r sesh_info, echo=FALSE}
+sessionInfo()
+```
+
+## Conda Environment
+```{bash comment="", echo=FALSE}
+if ! command -v conda &> /dev/null
+then
+  echo "Conda not detected."
+elif [ -z "${CONDA_PREFIX}" ]
+then
+  echo "No active Conda environment."
+else
+  echo "## Conda Environment YAML"
+  conda env export
+fi
+```
