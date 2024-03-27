@@ -10,7 +10,7 @@ git clone https://github.com/Mayrlab/slam-k562-utrome.git
 ```
 
 ### Prerequisite Software
-This requires Conda/Mamba and Snakemake. If you do not already have a Conda installation, we strongly recommend [Mambaforge](https://github.com/conda-forge/miniforge#mambaforge). We provide a YAML for the Snakemake version we used (v6.8), but feel free to use later versions.
+This requires Conda/Mamba and Snakemake. If you do not already have a Conda installation, we strongly recommend [Miniforge](https://github.com/conda-forge/miniforge#miniforge). We provide a YAML for the Snakemake version we used (v6.8), but feel free to use later versions.
 
 ### Configuration
 Three configuration options in `config.yaml` should be adjusted by the user prior to running:
