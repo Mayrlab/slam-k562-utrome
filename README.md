@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/654306330.svg)](https://zenodo.org/doi/10.5281/zenodo.10887801)
+
 ## slam-k562-utrome
 This repository provides a pipeline for reprocessing the SLAM-seq dataset from [Wu et al., 2019](https://doi.org/10.7554/eLife.45396) at 3'UTR isoform resolution using [the human UTRome annotation](https://github.com/Mayrlab/hcl-utrome) developed by Fansler et al. 2023.
 
